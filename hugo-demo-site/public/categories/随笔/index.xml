@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>随笔 on Hugo 静态站点完整示例</title>
+		<link>http://localhost:1313/categories/%E9%9A%8F%E7%AC%94/</link>
+		<description>Recent content in 随笔 on Hugo 静态站点完整示例</description>
+		<generator>Hugo</generator>
+		<language>zh-cn</language>
+		
+		
+		
+		
+			<lastBuildDate>Mon, 03 Aug 2026 14:00:00 +0800</lastBuildDate>
+		
+			<atom:link href="http://localhost:1313/categories/%E9%9A%8F%E7%AC%94/index.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>静态网站生成器的适用场景</title>
+				<link>http://localhost:1313/posts/static-site-benefits/</link>
+				<pubDate>Mon, 03 Aug 2026 14:00:00 +0800</pubDate>
+				<guid>http://localhost:1313/posts/static-site-benefits/</guid>
+				<description>&lt;p&gt;并不是所有网站都适合做成静态站点，但下面这些场景中，Hugo 通常是很好的选择：&lt;/p&gt;&#xA;&lt;h2 id=&#34;适合的场景&#34;&gt;适合的场景&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;技术博客 / 个人博客&lt;/strong&gt;：内容更新频率不高，读多写少&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;产品文档站&lt;/strong&gt;：结构化的 Markdown 文档，需要快速构建和部署&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;企业官网 / 落地页&lt;/strong&gt;：内容相对固定，追求首屏加载速度&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;开源项目主页&lt;/strong&gt;：直接托管在 GitHub Pages 上，零成本&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;不太适合的场景&#34;&gt;不太适合的场景&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;需要用户登录、评论、实时互动等强动态功能的应用（不过可以通过第三方服务如 Disqus、Giscus 弥补评论功能）&lt;/li&gt;&#xA;&lt;li&gt;内容由非技术人员通过可视化界面频繁编辑的场景（除非搭配无头 CMS）&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;部署到哪里&#34;&gt;部署到哪里&lt;/h2&gt;&#xA;&lt;p&gt;生成的 &lt;code&gt;public/&lt;/code&gt; 目录是一堆纯静态文件，几乎可以部署到任何地方：&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;GitHub Pages / GitLab Pages&lt;/li&gt;&#xA;&lt;li&gt;Cloudflare Pages&lt;/li&gt;&#xA;&lt;li&gt;Netlify / Vercel&lt;/li&gt;&#xA;&lt;li&gt;任意支持静态文件的对象存储 + CDN（如阿里云 OSS、腾讯云 COS）&lt;/li&gt;&#xA;&lt;li&gt;自己的 Nginx 服务器&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+			</item>
+	</channel>
+</rss>

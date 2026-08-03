@@ -1,0 +1,46 @@
+baseURL = "https://example.com/"
+languageCode = "zh-cn"
+title = "Hugo 静态站点完整示例"
+
+# 是否在页面中显示草稿(生产环境应为 false)
+buildDrafts = false
+buildFuture = false
+
+[pagination]
+  pagerSize = 5
+
+[params]
+  description = "一个使用 Hugo 从零搭建的完整静态站点示例工程,包含自定义主题、文章列表、详情页、关于页等常见功能。"
+  author = "Hugo Demo"
+  # 页脚显示的年份会自动使用当前年份,这里只是备用文案
+  footerText = "Powered by Hugo — 用 Go 编写的静态网站生成器"
+
+[menu]
+  [[menu.main]]
+    identifier = "home"
+    name = "首页"
+    url = "/"
+    weight = 10
+  [[menu.main]]
+    identifier = "posts"
+    name = "文章"
+    url = "/posts/"
+    weight = 20
+  [[menu.main]]
+    identifier = "about"
+    name = "关于"
+    url = "/about/"
+    weight = 30
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    style = "monokai"
+    lineNos = true
+    codeFences = true

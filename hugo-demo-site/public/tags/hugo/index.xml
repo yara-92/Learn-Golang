@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>Hugo on Hugo 静态站点完整示例</title>
+		<link>http://localhost:1313/tags/hugo/</link>
+		<description>Recent content in Hugo on Hugo 静态站点完整示例</description>
+		<generator>Hugo</generator>
+		<language>zh-cn</language>
+		
+		
+		
+		
+			<lastBuildDate>Sat, 01 Aug 2026 09:00:00 +0800</lastBuildDate>
+		
+			<atom:link href="http://localhost:1313/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>欢迎使用 Hugo</title>
+				<link>http://localhost:1313/posts/welcome-to-hugo/</link>
+				<pubDate>Sat, 01 Aug 2026 09:00:00 +0800</pubDate>
+				<guid>http://localhost:1313/posts/welcome-to-hugo/</guid>
+				<description>&lt;h2 id=&#34;什么是-hugo&#34;&gt;什么是 Hugo&lt;/h2&gt;&#xA;&lt;p&gt;Hugo 是一个使用 &lt;strong&gt;Go&lt;/strong&gt; 语言编写的开源静态网站生成器，以极致的构建速度著称——即便是数以万计的页面，通常也能在几秒内完成渲染。&lt;/p&gt;&#xA;&lt;h2 id=&#34;核心工作流程&#34;&gt;核心工作流程&lt;/h2&gt;&#xA;&lt;p&gt;Hugo 的基本工作方式可以概括为三步：&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;在 &lt;code&gt;content/&lt;/code&gt; 目录中用 Markdown 编写内容&lt;/li&gt;&#xA;&lt;li&gt;在 &lt;code&gt;layouts/&lt;/code&gt; 目录中定义模板，决定内容如何被渲染成 HTML&lt;/li&gt;&#xA;&lt;li&gt;执行 &lt;code&gt;hugo&lt;/code&gt; 命令，生成的静态文件会输出到 &lt;code&gt;public/&lt;/code&gt; 目录&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;div style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&#xA;&lt;table style=&#34;border-spacing:0;padding:0;margin:0;border:0;&#34;&gt;&lt;tr&gt;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;&#34;&gt;&#xA;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;1&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;2&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;3&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;4&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;5&#xA;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&#xA;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;;width:100%&#34;&gt;&#xA;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 本地开发,启动带热重载的预览服务器&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;hugo server -D&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 生产构建,输出到 public/ 目录&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;hugo --minify&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&#xA;&lt;/div&gt;&#xA;&lt;/div&gt;&lt;h2 id=&#34;为什么选择静态网站生成器&#34;&gt;为什么选择静态网站生成器&lt;/h2&gt;&#xA;&lt;p&gt;相比传统的动态 CMS（如 WordPress），静态站点在以下方面有明显优势：&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;速度&lt;/strong&gt;：没有数据库查询和服务端渲染开销，页面直接是纯 HTML&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;安全&lt;/strong&gt;：没有后台管理系统和数据库暴露在外网，攻击面小得多&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;成本&lt;/strong&gt;：可以免费部署在 GitHub Pages、Cloudflare Pages、Netlify、Vercel 等平台&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;版本控制友好&lt;/strong&gt;：所有内容都是文本文件，天然适合 Git 管理&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;继续阅读下一篇，了解 Markdown 的常用语法。&lt;/p&gt;</description>
+			</item>
+	</channel>
+</rss>

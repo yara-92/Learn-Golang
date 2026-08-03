@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>静态网站生成器的适用场景 · Hugo 静态站点完整示例</title>
+<meta name="description" content="什么样的项目适合用 Hugo 这类工具">
+<meta name="author" content="Hugo Demo">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="icon" href="data:,">
+
+</head>
+<body>
+  <header class="site-header">
+  <div class="wrap">
+    <a class="site-title" href="/">Hugo 静态站点完整示例</a>
+    <nav class="site-nav">
+      
+        <a href="/">首页</a>
+      
+        <a href="/posts/">文章</a>
+      
+        <a href="/about/">关于</a>
+      
+    </nav>
+  </div>
+</header>
+
+  <main class="wrap main-content">
+    
+<article class="single-post">
+  <header class="post-header">
+    <h1>静态网站生成器的适用场景</h1>
+    
+    <div class="post-meta">
+      <time datetime="2026-08-03">2026年08月03日</time>
+      
+        <span class="category">随笔</span>
+      
+    </div>
+    
+  </header>
+
+  <div class="content">
+    <p>并不是所有网站都适合做成静态站点，但下面这些场景中，Hugo 通常是很好的选择：</p>
+<h2 id="适合的场景">适合的场景</h2>
+<ul>
+<li><strong>技术博客 / 个人博客</strong>：内容更新频率不高，读多写少</li>
+<li><strong>产品文档站</strong>：结构化的 Markdown 文档，需要快速构建和部署</li>
+<li><strong>企业官网 / 落地页</strong>：内容相对固定，追求首屏加载速度</li>
+<li><strong>开源项目主页</strong>：直接托管在 GitHub Pages 上，零成本</li>
+</ul>
+<h2 id="不太适合的场景">不太适合的场景</h2>
+<ul>
+<li>需要用户登录、评论、实时互动等强动态功能的应用（不过可以通过第三方服务如 Disqus、Giscus 弥补评论功能）</li>
+<li>内容由非技术人员通过可视化界面频繁编辑的场景（除非搭配无头 CMS）</li>
+</ul>
+<h2 id="部署到哪里">部署到哪里</h2>
+<p>生成的 <code>public/</code> 目录是一堆纯静态文件，几乎可以部署到任何地方：</p>
+<ul>
+<li>GitHub Pages / GitLab Pages</li>
+<li>Cloudflare Pages</li>
+<li>Netlify / Vercel</li>
+<li>任意支持静态文件的对象存储 + CDN（如阿里云 OSS、腾讯云 COS）</li>
+<li>自己的 Nginx 服务器</li>
+</ul>
+
+  </div>
+
+  
+  <div class="tags">
+    <span class="tag">#架构</span><span class="tag">#部署</span>
+  </div>
+  
+</article>
+
+  </main>
+  <footer class="site-footer">
+  <div class="wrap">
+    <p>© 2026 Hugo 静态站点完整示例 · Powered by Hugo — 用 Go 编写的静态网站生成器</p>
+  </div>
+</footer>
+
+</body>
+</html>
