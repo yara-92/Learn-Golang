@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>approval-engine · 控制台</title>
+<style>
+  :root{
+    --bg: #0b0d12;
+    --panel: #12151c;
+    --panel-2: #161a23;
+    --border: #232837;
+    --border-soft: #1b2029;
+    --text: #e6e9f0;
+    --muted: #7d8598;
+    --muted-2: #545b6c;
+    --accent: #5b8cff;
+    --accent-dim: #2b3d66;
+    --amber: #e8a33d;
+    --emerald: #3ecf8e;
+    --rose: #ef5a6f;
+    --violet: #9d7bff;
+    --teal: #35c2c1;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  code, .mono, input, textarea, .path{ font-family:var(--mono); }
+
+  /* ---------- Layout ---------- */
+  #app{ display:flex; flex-direction:column; height:100vh; }
+
+  header{
+    display:flex; align-items:center; gap:14px;
+    padding:10px 18px; border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, #10131a, #0d0f15);
+    flex:0 0 auto;
+  }
+  .brand{ display:flex; align-items:center; gap:9px; font-weight:600; letter-spacing:.2px; }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+  .brand small{ color:var(--muted); font-weight:400; font-family:var(--mono); font-size:11px; }
+
+  .conn{
+    margin-left:auto; display:flex; align-items:center; gap:10px;
+  }
+  .conn input{
+    background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    border-radius:6px; padding:6px 10px; width:230px; font-size:12px;
+  }
+  .status-pill{
+    display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted);
+    padding:5px 10px; border:1px solid var(--border); border-radius:999px; background:var(--panel-2);
+  }
+  .status-pill .led{ width:7px;height:7px;border-radius:50%; background:var(--muted-2); }
+  .status-pill.ok .led{ background:var(--emerald); box-shadow:0 0 6px var(--emerald); }
+  .status-pill.bad .led{ background:var(--rose); box-shadow:0 0 6px var(--rose); }
+
+  main{ flex:1 1 auto; display:flex; min-height:0; }
+
+  aside{
+    width:270px; flex:0 0 auto; border-right:1px solid var(--border);
+    background:var(--panel); display:flex; flex-direction:column; min-height:0;
+  }
+  .aside-section{ padding:14px 14px 10px; border-bottom:1px solid var(--border-soft); }
+  .aside-title{
+    font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+    margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;
+  }
+
+  .identity-card{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px;
+    border:1px solid var(--border); margin-bottom:8px; min-height:44px;
+  }
+  .identity-card.empty{ color:var(--muted); font-size:12px; justify-content:center; border-style:dashed; }
+  .avatar{ width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#0b0d12; flex:0 0 auto; }
+  .id-meta{ min-width:0; }
+  .id-meta .name{ font-weight:600; font-size:13px; }
+  .id-meta .role{ font-size:11px; color:var(--muted); font-family:var(--mono); }
+  .id-logout{ margin-left:auto; background:none; border:none; color:var(--muted); cursor:pointer; font-size:11px; }
+  .id-logout:hover{ color:var(--rose); }
+
+  .quick-users{ display:flex; flex-direction:column; gap:6px; }
+  .quick-user-btn{
+    display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+    background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    padding:7px 9px; border-radius:7px; cursor:pointer; font-size:12.5px;
+  }
+  .quick-user-btn:hover{ border-color:var(--accent); }
+  .quick-user-btn.active{ border-color:var(--accent); background:var(--accent-dim); }
+  .quick-user-btn .dot{ width:8px;height:8px;border-radius:50%; flex:0 0 auto; }
+  .quick-user-btn .u{ font-family:var(--mono); font-weight:600; }
+  .quick-user-btn .r{ margin-left:auto; color:var(--muted); font-size:10.5px; }
+
+  .manual-login{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+  .manual-login input{
+    background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    border-radius:6px; padding:6px 8px; font-size:12px; width:100%;
+  }
+
+  .log-panel{
+    flex:1 1 auto; min-height:0; display:flex; flex-direction:column; padding:14px;
+  }
+  .log-stream{
+    flex:1 1 auto; overflow-y:auto; font-family:var(--mono); font-size:11px;
+    display:flex; flex-direction:column-reverse; gap:4px; padding-right:4px;
+  }
+  .log-line{ display:flex; gap:7px; padding:4px 6px; border-radius:5px; }
+  .log-line:hover{ background:var(--panel-2); }
+  .log-line .t{ color:var(--muted-2); flex:0 0 auto; }
+  .log-line .m{ color:var(--muted); flex:0 0 auto; }
+  .log-line .s{ font-weight:700; flex:0 0 auto; }
+  .log-line .s.ok{ color:var(--emerald); }
+  .log-line .s.warn{ color:var(--amber); }
+  .log-line .s.err{ color:var(--rose); }
+  .log-line .p{ color:var(--text); word-break:break-all; }
+  .log-clear{ background:none;border:1px solid var(--border); color:var(--muted); border-radius:6px; font-size:10.5px; padding:3px 8px; cursor:pointer; }
+  .log-clear:hover{ color:var(--text); border-color:var(--accent); }
+
+  /* ---------- Main content ---------- */
+  .content{ flex:1 1 auto; display:flex; flex-direction:column; min-width:0; min-height:0; }
+  .tabs{
+    display:flex; gap:2px; padding:0 18px; border-bottom:1px solid var(--border);
+    background:var(--panel); flex:0 0 auto;
+  }
+  .tab-btn{
+    background:none; border:none; color:var(--muted); padding:12px 15px; font-size:13px;
+    cursor:pointer; border-bottom:2px solid transparent; font-weight:500;
+  }
+  .tab-btn:hover{ color:var(--text); }
+  .tab-btn.active{ color:var(--text); border-bottom-color:var(--accent); }
+
+  .panes{ flex:1 1 auto; overflow-y:auto; padding:22px; }
+  .pane{ display:none; max-width:1180px; }
+  .pane.active{ display:block; }
+
+  h2.pane-title{ font-size:16px; margin:0 0 4px; font-weight:600; }
+  p.pane-desc{ color:var(--muted); font-size:12.5px; margin:0 0 20px; }
+
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px 18px;
+    margin-bottom:16px;
+  }
+  .card-title{ font-size:12.5px; font-weight:600; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .badge{
+    font-size:10px; font-family:var(--mono); padding:2px 7px; border-radius:999px;
+    border:1px solid var(--border); color:var(--muted);
+  }
+
+  .btn{
+    background:var(--accent); border:none; color:#fff; font-weight:600; font-size:12.5px;
+    padding:8px 14px; border-radius:7px; cursor:pointer;
+  }
+  .btn:hover{ filter:brightness(1.08); }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .btn.secondary{ background:var(--panel-2); border:1px solid var(--border); color:var(--text); }
+  .btn.danger{ background:var(--rose); }
+  .btn.ghost{ background:none; border:1px solid var(--border); color:var(--muted); }
+  .btn.sm{ padding:5px 10px; font-size:11.5px; border-radius:6px; }
+
+  .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .grow{ flex:1 1 auto; }
+
+  /* scenario runner */
+  .scenario-list{ display:flex; flex-direction:column; gap:12px; }
+  .scenario{
+    border:1px solid var(--border); border-radius:10px; background:var(--panel); overflow:hidden;
+  }
+  .scenario-head{
+    display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer;
+  }
+  .scenario-head:hover{ background:var(--panel-2); }
+  .scenario-title{ font-weight:600; font-size:13px; }
+  .scenario-sub{ color:var(--muted); font-size:11.5px; margin-top:2px; }
+  .scenario-result{
+    margin-left:auto; font-size:11px; font-family:var(--mono); padding:3px 9px; border-radius:999px;
+    border:1px solid var(--border); color:var(--muted);
+  }
+  .scenario-result.pass{ color:var(--emerald); border-color:#1f4d3a; background:#0f1f18; }
+  .scenario-result.fail{ color:var(--rose); border-color:#4d1f27; background:#1f0f12; }
+  .scenario-result.running{ color:var(--amber); border-color:#4d3a1f; background:#1f180f; }
+  .scenario-steps{
+    border-top:1px solid var(--border-soft); padding:10px 16px 14px; display:none;
+    font-family:var(--mono); font-size:12px;
+  }
+  .scenario-steps.open{ display:block; }
+  .step{ display:flex; gap:8px; padding:5px 0; border-bottom:1px dashed var(--border-soft); align-items:flex-start; }
+  .step:last-child{ border-bottom:none; }
+  .step .mark{ flex:0 0 auto; width:16px; text-align:center; }
+  .step.pass .mark{ color:var(--emerald); }
+  .step.fail .mark{ color:var(--rose); }
+  .step.pending .mark{ color:var(--muted-2); }
+  .step .txt{ color:var(--text); }
+  .step .sub{ color:var(--muted); font-size:11px; margin-top:2px; }
+
+  /* API console */
+  .endpoint-grid{ display:grid; grid-template-columns: 340px 1fr; gap:16px; align-items:start; }
+  .endpoint-list{ display:flex; flex-direction:column; gap:5px; max-height:calc(100vh - 220px); overflow-y:auto; }
+  .endpoint-item{
+    display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:7px; cursor:pointer;
+    border:1px solid transparent;
+  }
+  .endpoint-item:hover{ background:var(--panel-2); }
+  .endpoint-item.active{ background:var(--accent-dim); border-color:var(--accent); }
+  .method{
+    font-family:var(--mono); font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;
+    flex:0 0 auto; width:38px; text-align:center;
+  }
+  .method.GET{ background:#123a2e; color:var(--emerald); }
+  .method.POST{ background:#2a2a11; color:var(--amber); }
+  .endpoint-path{ font-family:var(--mono); font-size:11.5px; color:var(--text); }
+  .endpoint-auth{ margin-left:auto; font-size:9px; color:var(--muted-2); }
+
+  .req-panel textarea{
+    width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:10px; font-size:12px; resize:vertical; min-height:110px;
+  }
+  .resp-box{
+    background:#0a0c11; border:1px solid var(--border); border-radius:8px; padding:12px;
+    font-family:var(--mono); font-size:11.5px; white-space:pre-wrap; word-break:break-all;
+    max-height:360px; overflow-y:auto; margin-top:10px;
+  }
+  .resp-status{ display:inline-block; padding:2px 8px; border-radius:5px; font-weight:700; font-size:11px; margin-right:8px; }
+  .resp-status.s2{ background:#123a2e; color:var(--emerald); }
+  .resp-status.s4{ background:#2a2a11; color:var(--amber); }
+  .resp-status.s5{ background:#3a1216; color:var(--rose); }
+  .field-label{ font-size:11px; color:var(--muted); margin:10px 0 5px; text-transform:uppercase; letter-spacing:.06em; }
+
+  /* workflow visualizer */
+  .dag-wrap{ overflow-x:auto; padding:20px 6px; }
+  .dag{ display:flex; align-items:flex-start; gap:0; min-width:max-content; }
+  .dag-col{ display:flex; flex-direction:column; align-items:center; }
+  .dag-node{
+    width:150px; border-radius:10px; border:1.5px solid var(--border); background:var(--panel-2);
+    padding:10px 12px; position:relative; z-index:1;
+  }
+  .dag-node .code{ font-family:var(--mono); font-size:10px; color:var(--muted); }
+  .dag-node .name{ font-size:12.5px; font-weight:600; margin-top:2px; }
+  .dag-node .stat{ font-size:10px; margin-top:6px; font-family:var(--mono); display:inline-block; padding:1px 6px; border-radius:4px; }
+  .dag-node.st-PENDING{ opacity:.5; }
+  .dag-node.st-ACTIVE{ border-color:var(--amber); box-shadow:0 0 0 3px rgba(232,163,61,.12); }
+  .dag-node.st-ACTIVE .stat{ background:#2a2a11; color:var(--amber); }
+  .dag-node.st-APPROVED{ border-color:var(--emerald); }
+  .dag-node.st-APPROVED .stat{ background:#123a2e; color:var(--emerald); }
+  .dag-node.st-REJECTED{ border-color:var(--rose); }
+  .dag-node.st-REJECTED .stat{ background:#3a1216; color:var(--rose); }
+  .dag-node.st-CANCELLED{ opacity:.4; }
+  .dag-node.st-CANCELLED .stat{ background:#20232c; color:var(--muted); }
+  .dag-arrow{ display:flex; align-items:center; color:var(--muted-2); padding:0 6px; align-self:center; margin-top:34px; font-size:16px; }
+  .dag-branches{ display:flex; flex-direction:column; gap:14px; }
+
+  .task-list{ display:flex; flex-direction:column; gap:8px; }
+  .task-item{
+    display:flex; align-items:center; gap:12px; padding:11px 14px; border:1px solid var(--border);
+    border-radius:9px; background:var(--panel);
+  }
+  .task-item .info{ flex:1 1 auto; min-width:0; }
+  .task-item .info .title{ font-size:12.5px; font-weight:600; }
+  .task-item .info .meta{ font-size:11px; color:var(--muted); font-family:var(--mono); margin-top:2px; }
+  .task-status{
+    font-size:10px; font-family:var(--mono); padding:2px 8px; border-radius:999px; border:1px solid var(--border);
+  }
+  .task-status.PENDING{ color:var(--amber); border-color:#4d3a1f; }
+  .task-status.APPROVED{ color:var(--emerald); border-color:#1f4d3a; }
+  .task-status.REJECTED{ color:var(--rose); border-color:#4d1f27; }
+  .task-status.CANCELLED{ color:var(--muted); }
+
+  .empty-hint{
+    color:var(--muted); font-size:12.5px; text-align:center; padding:30px 10px; border:1px dashed var(--border);
+    border-radius:10px;
+  }
+
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb{ background:#262b38; border-radius:5px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brand"><span class="dot"></span>approval-engine <small>DAG 审批流控制台</small></div>
+    <div class="conn">
+      <input id="baseUrlInput" value="http://localhost:8080" spellcheck="false">
+      <div class="status-pill" id="connStatus"><span class="led"></span><span id="connText">未连接</span></div>
+      <button class="btn ghost sm" id="pingBtn">检测连接</button>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <div class="aside-section">
+        <div class="aside-title">当前身份</div>
+        <div id="identityCard" class="identity-card empty">尚未登录</div>
+        <div class="quick-users" id="quickUsers"></div>
+        <div class="manual-login">
+          <input id="manualUser" placeholder="用户名">
+          <input id="manualPass" placeholder="密码" type="password">
+          <button class="btn secondary sm" id="manualLoginBtn" style="width:100%">登录</button>
+        </div>
+      </div>
+      <div class="log-panel">
+        <div class="aside-title">活动日志 <button class="log-clear" id="clearLogBtn">清空</button></div>
+        <div class="log-stream" id="logStream"></div>
+      </div>
+    </aside>
+
+    <div class="content">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="scenarios">场景测试</button>
+        <button class="tab-btn" data-tab="console">API 控制台</button>
+        <button class="tab-btn" data-tab="workflow">工作流可视化</button>
+        <button class="tab-btn" data-tab="tasks">我的待办</button>
+      </div>
+
+      <div class="panes">
+
+        <!-- ===== 场景测试 ===== -->
+        <section class="pane active" id="pane-scenarios">
+          <h2 class="pane-title">自动化场景测试</h2>
+          <p class="pane-desc">每个场景会自动完成登录、发起流程、审批等一整套调用，并对每一步的结果做断言。点击展开查看执行明细。</p>
+          <div class="scenario-list" id="scenarioList"></div>
+        </section>
+
+        <!-- ===== API 控制台 ===== -->
+        <section class="pane" id="pane-console">
+          <h2 class="pane-title">API 控制台</h2>
+          <p class="pane-desc">左侧选择接口，右侧编辑请求体后发送。需要登录的接口会自动带上当前身份的 token。</p>
+          <div class="endpoint-grid">
+            <div class="card" style="padding:10px;">
+              <div class="endpoint-list" id="endpointList"></div>
+            </div>
+            <div class="card req-panel">
+              <div class="card-title" id="reqTitle">选择左侧接口开始</div>
+              <div id="reqUrlLine" class="mono" style="font-size:11.5px;color:var(--muted);"></div>
+              <div class="field-label">请求体（JSON，GET 请求会被忽略）</div>
+              <textarea id="reqBody" spellcheck="false"></textarea>
+              <div class="row" style="margin-top:10px;">
+                <button class="btn" id="sendReqBtn">发送请求</button>
+                <span id="reqAuthHint" style="font-size:11px;color:var(--muted);"></span>
+              </div>
+              <div class="resp-box" id="respBox" style="display:none;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== 工作流可视化 ===== -->
+        <section class="pane" id="pane-workflow">
+          <h2 class="pane-title">工作流可视化</h2>
+          <p class="pane-desc">输入一个实例 ID，查看该审批实例在 DAG 模板上的实时节点状态、任务与操作日志。</p>
+          <div class="card">
+            <div class="row">
+              <input id="instanceIdInput" class="mono" placeholder="实例 ID，例如 1" style="background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 10px;width:160px;">
+              <button class="btn secondary sm" id="loadInstanceBtn">加载</button>
+              <button class="btn ghost sm" id="startDemoInstanceBtn">用当前身份发起一个新实例</button>
+              <span id="instanceStatusBadge"></span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">DAG 节点状态</div>
+            <div class="dag-wrap"><div class="dag" id="dagView"><div class="empty-hint">还没有加载实例</div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">任务列表</div>
+            <div class="task-list" id="instanceTaskList"><div class="empty-hint">还没有加载实例</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">操作日志</div>
+            <div class="resp-box" id="instanceLogBox" style="display:block; max-height:220px;">还没有加载实例</div>
+          </div>
+        </section>
+
+        <!-- ===== 我的待办 ===== -->
+        <section class="pane" id="pane-tasks">
+          <h2 class="pane-title">我的待办</h2>
+          <p class="pane-desc">当前登录身份下待处理 / 历史的所有审批任务。</p>
+          <div class="row" style="margin-bottom:14px;">
+            <button class="btn secondary sm" id="refreshTasksBtn">刷新</button>
+            <select id="taskStatusFilter" style="background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:7px 10px;font-size:12px;">
+              <option value="">全部状态</option>
+              <option value="PENDING">仅待办 PENDING</option>
+              <option value="APPROVED">已通过 APPROVED</option>
+              <option value="REJECTED">已拒绝 REJECTED</option>
+              <option value="CANCELLED">已取消 CANCELLED</option>
+            </select>
+          </div>
+          <div class="task-list" id="myTaskList"><div class="empty-hint">请先在左侧登录一个身份</div></div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+'use strict';
+
+/* ===================== 常量 / 状态 ===================== */
+
+const SEED_USERS = [
+  { username: 'alice', password: 'alice123', role: 'employee' },
+  { username: 'bob', password: 'bob123', role: 'manager' },
+  { username: 'carol', password: 'carol123', role: 'hr' },
+  { username: 'dave', password: 'dave123', role: 'finance' },
+  { username: 'admin', password: 'admin123', role: 'admin' },
+];
+
+const state = {
+  sessions: {},      // username -> { token, user }
+  currentUser: null, // username | null
+  templates: [],      // 缓存的模板列表
+};
+
+/* ===================== DOM 引用 ===================== */
+
+const baseUrlInput = document.getElementById('baseUrlInput');
+const connStatus = document.getElementById('connStatus');
+const connText = document.getElementById('connText');
+const logStream = document.getElementById('logStream');
+const identityCard = document.getElementById('identityCard');
+const quickUsers = document.getElementById('quickUsers');
+const endpointList = document.getElementById('endpointList');
+const reqTitle = document.getElementById('reqTitle');
+const reqUrlLine = document.getElementById('reqUrlLine');
+const reqBody = document.getElementById('reqBody');
+const reqAuthHint = document.getElementById('reqAuthHint');
+const respBox = document.getElementById('respBox');
+const scenarioList = document.getElementById('scenarioList');
+const dagView = document.getElementById('dagView');
+const instanceTaskList = document.getElementById('instanceTaskList');
+const instanceLogBox = document.getElementById('instanceLogBox');
+const instanceStatusBadge = document.getElementById('instanceStatusBadge');
+const myTaskList = document.getElementById('myTaskList');
+
+/* ===================== 工具函数 ===================== */
+
+function getBaseUrl() {
+  return baseUrlInput.value.replace(/\/$/, '');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+}
+
+function nowStr() {
+  return new Date().toTimeString().slice(0, 8);
+}
+
+function roleColor(role) {
+  switch (role) {
+    case 'manager': return '#9d7bff';
+    case 'hr': return '#35c2c1';
+    case 'finance': return '#e8a33d';
+    case 'admin': return '#ef5a6f';
+    default: return '#5b8cff';
+  }
+}
+
+function log(method, path, status, extra) {
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  let statusClass = 'ok';
+  if (typeof status === 'number') {
+    if (status >= 500) statusClass = 'err';
+    else if (status >= 400) statusClass = 'warn';
+  } else if (status === 'ERR') {
+    statusClass = 'err';
+  }
+  line.innerHTML =
+    '<span class="t">' + nowStr() + '</span>' +
+    '<span class="m">' + method + '</span>' +
+    '<span class="s ' + statusClass + '">' + status + '</span>' +
+    '<span class="p">' + path + (extra ? (' ' + escapeHtml(extra)) : '') + '</span>';
+  logStream.prepend(line);
+}
+
+/* ===================== 核心：统一的 API 调用封装 ===================== */
+
+async function api(method, path, opts) {
+  opts = opts || {};
+  const url = getBaseUrl() + path;
+  const headers = {};
+  let payload;
+  if (opts.body !== undefined && opts.body !== null) {
+    headers['Content-Type'] = 'application/json';
+    payload = typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body);
+  }
+  if (opts.token) headers['Authorization'] = 'Bearer ' + opts.token;
+
+  let res, text = '', json = null;
+  try {
+    res = await fetch(url, { method, headers, body: payload });
+    text = await res.text();
+    try { json = text ? JSON.parse(text) : null; } catch (_e) { json = null; }
+    log(method, path, res.status);
+  } catch (e) {
+    log(method, path, 'ERR', e.message);
+    const err = new Error('网络错误：' + e.message);
+    err.result = { ok: false, status: 'ERR', json: null, text: '' };
+    throw err;
+  }
+
+  const result = { ok: res.ok, status: res.status, json, text };
+  if (!res.ok) {
+    const err = new Error((json && json.error) || ('HTTP ' + res.status));
+    err.result = result;
+    throw err;
+  }
+  return result;
+}
+
+/* ===================== 连接状态 ===================== */
+
+async function ping() {
+  try {
+    const res = await fetch(getBaseUrl() + '/api/health');
+    if (!res.ok) throw new Error('status ' + res.status);
+    connStatus.classList.add('ok');
+    connStatus.classList.remove('bad');
+    connText.textContent = '已连接';
+    log('GET', '/api/health', res.status);
+  } catch (e) {
+    connStatus.classList.add('bad');
+    connStatus.classList.remove('ok');
+    connText.textContent = '无法连接';
+    log('GET', '/api/health', 'ERR', e.message);
+  }
+}
+
+/* ===================== 身份 / 登录 ===================== */
+
+function currentToken() {
+  const cur = state.currentUser ? state.sessions[state.currentUser] : null;
+  return cur ? cur.token : null;
+}
+
+function renderIdentity() {
+  const cur = state.currentUser ? state.sessions[state.currentUser] : null;
+  if (!cur) {
+    identityCard.className = 'identity-card empty';
+    identityCard.textContent = '尚未登录';
+  } else {
+    identityCard.className = 'identity-card';
+    const u = cur.user;
+    const initial = (u.display_name || u.username || '?').slice(0, 1).toUpperCase();
+    identityCard.innerHTML =
+      '<div class="avatar" style="background:' + roleColor(u.role) + '">' + initial + '</div>' +
+      '<div class="id-meta"><div class="name">' + escapeHtml(u.display_name) + '</div>' +
+      '<div class="role">' + escapeHtml(u.username) + ' · ' + escapeHtml(u.role) + '</div></div>' +
+      '<button class="id-logout" id="logoutBtn">退出</button>';
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      delete state.sessions[state.currentUser];
+      state.currentUser = null;
+      renderIdentity();
+      renderMyTasks();
+    });
+  }
+  renderQuickUsers();
+  renderReqAuthHint();
+}
+
+function renderQuickUsers() {
+  quickUsers.innerHTML = '';
+  SEED_USERS.forEach((su) => {
+    const logged = !!state.sessions[su.username];
+    const active = state.currentUser === su.username;
+    const btn = document.createElement('button');
+    btn.className = 'quick-user-btn' + (active ? ' active' : '');
+    btn.innerHTML =
+      '<span class="dot" style="background:' + roleColor(su.role) + '"></span>' +
+      '<span class="u">' + su.username + '</span>' +
+      '<span class="r">' + (logged ? '已登录' : '点击登录') + '</span>';
+    btn.addEventListener('click', () => quickLogin(su));
+    quickUsers.appendChild(btn);
+  });
+}
+
+async function quickLogin(su) {
+  if (state.sessions[su.username]) {
+    state.currentUser = su.username;
+    renderIdentity();
+    renderMyTasks();
+    return;
+  }
+  try {
+    const res = await api('POST', '/api/auth/login', { body: { username: su.username, password: su.password } });
+    state.sessions[su.username] = { token: res.json.token, user: res.json.user };
+    state.currentUser = su.username;
+    renderIdentity();
+    renderMyTasks();
+  } catch (e) {
+    alert('登录失败：' + e.message);
+  }
+}
+
+async function loginRaw(username, password) {
+  const res = await api('POST', '/api/auth/login', { body: { username, password } });
+  state.sessions[username] = { token: res.json.token, user: res.json.user };
+  return res.json;
+}
+
+/* ===================== 标签页切换 ===================== */
+
+function initTabs() {
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll('.pane').forEach((p) => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('pane-' + btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'tasks') renderMyTasks();
+    });
+  });
+}
+
+/* ===================== API 控制台 ===================== */
+
+const ENDPOINTS = [
+  { method: 'GET', path: '/api/health', auth: false, body: null, desc: '健康检查' },
+  { method: 'POST', path: '/api/auth/login', auth: false, body: { username: 'alice', password: 'alice123' }, desc: '登录' },
+  { method: 'POST', path: '/api/auth/register', auth: false, body: { username: 'newuser', password: 'pass123', display_name: '新用户', role: 'employee' }, desc: '注册新用户' },
+  { method: 'GET', path: '/api/me', auth: true, body: null, desc: '当前用户信息' },
+  { method: 'GET', path: '/api/users', auth: true, body: null, desc: '用户列表' },
+  { method: 'GET', path: '/api/templates', auth: true, body: null, desc: '模板列表' },
+  { method: 'GET', path: '/api/templates/1', auth: true, body: null, desc: '模板详情' },
+  {
+    method: 'POST', path: '/api/templates', auth: true, desc: '创建模板（DAG 定义）',
+    body: {
+      name: '请假审批',
+      business_type: 'LEAVE',
+      nodes: [
+        { code: 'start', name: '开始', node_type: 'START' },
+        { code: 'manager', name: '经理审批', node_type: 'APPROVAL', approve_type: 'ANY', approvers: [{ approver_type: 'ROLE', approver_ref: 'manager' }] },
+        { code: 'end', name: '结束', node_type: 'END' },
+      ],
+      edges: [
+        { from_code: 'start', to_code: 'manager' },
+        { from_code: 'manager', to_code: 'end' },
+      ],
+    },
+  },
+  {
+    method: 'POST', path: '/api/instances', auth: true, desc: '发起审批实例',
+    body: { template_id: 1, business_type: 'EXPENSE', business_id: 'E-DEMO-1', title: '控制台测试报销', form_data: { amount: 288, reason: '控制台手动测试' } },
+  },
+  { method: 'GET', path: '/api/instances/mine', auth: true, body: null, desc: '我发起的实例' },
+  { method: 'GET', path: '/api/instances', auth: true, body: null, desc: '全部实例' },
+  { method: 'GET', path: '/api/instances/1', auth: true, body: null, desc: '实例详情（含节点/任务/日志）' },
+  { method: 'GET', path: '/api/tasks/mine?status=PENDING', auth: true, body: null, desc: '我的待办任务' },
+  { method: 'POST', path: '/api/tasks/1/approve', auth: true, body: { comment: '同意' }, desc: '通过任务' },
+  { method: 'POST', path: '/api/tasks/1/reject', auth: true, body: { comment: '驳回' }, desc: '拒绝任务' },
+];
+
+let activeEndpointIdx = null;
+
+function renderEndpointList() {
+  endpointList.innerHTML = '';
+  ENDPOINTS.forEach((ep, idx) => {
+    const item = document.createElement('div');
+    item.className = 'endpoint-item' + (activeEndpointIdx === idx ? ' active' : '');
+    item.innerHTML =
+      '<span class="method ' + ep.method + '">' + ep.method + '</span>' +
+      '<span class="endpoint-path">' + ep.path + '</span>' +
+      '<span class="endpoint-auth">' + (ep.auth ? '需要登录' : '') + '</span>';
+    item.addEventListener('click', () => selectEndpoint(idx));
+    endpointList.appendChild(item);
+  });
+}
+
+function selectEndpoint(idx) {
+  activeEndpointIdx = idx;
+  renderEndpointList();
+  const ep = ENDPOINTS[idx];
+  reqTitle.textContent = ep.desc;
+  reqUrlLine.textContent = ep.method + '  ' + ep.path;
+  reqBody.value = ep.body ? JSON.stringify(ep.body, null, 2) : '';
+  reqBody.style.display = ep.method === 'GET' ? 'none' : 'block';
+  respBox.style.display = 'none';
+  renderReqAuthHint();
+}
+
+function renderReqAuthHint() {
+  if (activeEndpointIdx === null) return;
+  const ep = ENDPOINTS[activeEndpointIdx];
+  if (!ep.auth) { reqAuthHint.textContent = '此接口无需登录'; return; }
+  reqAuthHint.textContent = state.currentUser
+    ? ('将使用当前身份 ' + state.currentUser + ' 的 token')
+    : '⚠ 此接口需要登录，请先在左侧选择一个身份';
+}
+
+function renderResp(status, data) {
+  const cls = typeof status === 'number' ? (status < 300 ? 's2' : status < 500 ? 's4' : 's5') : 's5';
+  const pretty = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  respBox.style.display = 'block';
+  respBox.innerHTML = '<span class="resp-status ' + cls + '">' + status + '</span>' + escapeHtml(pretty);
+}
+
+async function sendConsoleRequest() {
+  if (activeEndpointIdx === null) return;
+  const ep = ENDPOINTS[activeEndpointIdx];
+  let body;
+  if (ep.method !== 'GET' && reqBody.value.trim()) {
+    try { body = JSON.parse(reqBody.value); }
+    catch (e) { alert('请求体不是合法 JSON：' + e.message); return; }
+  }
+  const token = ep.auth ? currentToken() : null;
+  if (ep.auth && !token) { alert('请先在左侧登录一个身份'); return; }
+
+  respBox.style.display = 'block';
+  respBox.textContent = '请求中 ...';
+  try {
+    const res = await api(ep.method, ep.path, { body, token });
+    renderResp(res.status, res.json !== null && res.json !== undefined ? res.json : res.text);
+  } catch (e) {
+    const r = e.result;
+    renderResp(r ? r.status : 'ERR', (r && r.json) || e.message);
+  }
+}
+
+/* ===================== 工作流可视化 ===================== */
+
+async function ensureTemplatesLoaded() {
+  if (state.templates.length) return state.templates;
+  const token = currentToken() || Object.values(state.sessions).map((s) => s.token)[0];
+  if (!token) throw new Error('需要先登录任意身份才能读取模板');
+  const res = await api('GET', '/api/templates', { token });
+  state.templates = res.json || [];
+  return state.templates;
+}
+
+// 用 Kahn 算法计算每个节点在 DAG 中的"层级"（从 START 出发的最长路径长度），
+// 同一层级的节点会在可视化里被并排渲染在同一列——这正是"并行分支"的直观体现。
+function computeRanks(nodes, edges) {
+  const outMap = {}, inMap = {};
+  nodes.forEach((n) => { outMap[n.id] = []; inMap[n.id] = []; });
+  edges.forEach((e) => {
+    if (outMap[e.from_node_id]) outMap[e.from_node_id].push(e.to_node_id);
+    if (inMap[e.to_node_id]) inMap[e.to_node_id].push(e.from_node_id);
+  });
+  const indeg = {};
+  nodes.forEach((n) => { indeg[n.id] = inMap[n.id].length; });
+  const rank = {};
+  const queue = [];
+  nodes.forEach((n) => { if (indeg[n.id] === 0) { rank[n.id] = 0; queue.push(n.id); } });
+  while (queue.length) {
+    const id = queue.shift();
+    (outMap[id] || []).forEach((next) => {
+      rank[next] = Math.max(rank[next] || 0, (rank[id] || 0) + 1);
+      indeg[next] -= 1;
+      if (indeg[next] === 0) queue.push(next);
+    });
+  }
+  return rank;
+}
+
+function renderDag(template, instanceNodes, instanceStatus) {
+  const nodes = template.nodes || [];
+  const edges = template.edges || [];
+  if (!nodes.length) {
+    dagView.innerHTML = '<div class="empty-hint">该模板没有节点定义</div>';
+    return;
+  }
+  const rank = computeRanks(nodes, edges);
+  const byNodeId = {};
+  (instanceNodes || []).forEach((n) => { byNodeId[n.node_id] = n; });
+
+  const maxRank = Math.max.apply(null, nodes.map((n) => rank[n.id] || 0));
+  const columns = [];
+  for (let i = 0; i <= maxRank; i++) columns.push([]);
+  nodes.forEach((n) => columns[rank[n.id] || 0].push(n));
+
+  dagView.innerHTML = '';
+  columns.forEach((col, colIdx) => {
+    const branchWrap = document.createElement('div');
+    branchWrap.className = 'dag-branches';
+    col.forEach((n) => {
+      const inst = byNodeId[n.id];
+      let status = inst ? inst.status : 'PENDING';
+      // 引擎设计上不会为 END 节点创建 instance_node 记录（见 engine.go 的
+      // completeInstance），流程是否真的走到终点、走到的是通过还是拒绝，
+      // 要看实例本身的最终状态，而不是某条 instance_node 记录。
+      if (!inst && n.node_type === 'END' && instanceStatus === 'APPROVED') {
+        status = 'APPROVED';
+      }
+      const box = document.createElement('div');
+      box.className = 'dag-node st-' + status;
+      box.innerHTML =
+        '<div class="code">' + escapeHtml(n.code) + (n.approve_type ? (' · ' + n.approve_type) : '') + '</div>' +
+        '<div class="name">' + escapeHtml(n.name) + '</div>' +
+        '<span class="stat">' + status + (n.join_type === 'ALL' && (edgesInto(edges, n.id) > 1) ? ' · JOIN ALL' : '') + '</span>';
+      branchWrap.appendChild(box);
+    });
+    dagView.appendChild(branchWrap);
+    if (colIdx < columns.length - 1) {
+      const arrow = document.createElement('div');
+      arrow.className = 'dag-arrow';
+      arrow.textContent = '→';
+      dagView.appendChild(arrow);
+    }
+  });
+}
+
+function edgesInto(edges, nodeId) {
+  return edges.filter((e) => e.to_node_id === nodeId).length;
+}
+
+function renderInstanceTasks(tasks) {
+  if (!tasks || !tasks.length) {
+    instanceTaskList.innerHTML = '<div class="empty-hint">该实例还没有产生任何任务</div>';
+    return;
+  }
+  instanceTaskList.innerHTML = '';
+  tasks.forEach((t) => {
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    item.innerHTML =
+      '<div class="info"><div class="title">' + escapeHtml(t.node_name || ('节点 ' + t.instance_node_id)) + '</div>' +
+      '<div class="meta">task #' + t.id + ' · approver_id=' + t.approver_id + (t.comment ? (' · "' + escapeHtml(t.comment) + '"') : '') + '</div></div>' +
+      '<span class="task-status ' + t.status + '">' + t.status + '</span>';
+    instanceTaskList.appendChild(item);
+  });
+}
+
+function renderInstanceLogs(logs) {
+  if (!logs || !logs.length) {
+    instanceLogBox.textContent = '暂无日志';
+    return;
+  }
+  instanceLogBox.textContent = logs.map((l) => '[' + l.action + '] ' + (l.detail || '')).join('\n');
+}
+
+async function loadInstance(id) {
+  const token = currentToken() || Object.values(state.sessions).map((s) => s.token)[0];
+  if (!token) { alert('请先在左侧登录一个身份'); return; }
+  try {
+    const res = await api('GET', '/api/instances/' + id, { token });
+    const { instance, nodes, tasks, logs } = res.json;
+    instanceStatusBadge.innerHTML = '<span class="task-status ' + instance.status + '" style="margin-left:10px;">' + instance.status + '</span>';
+
+    const templates = await ensureTemplatesLoaded();
+    let tpl = templates.find((t) => t.id === instance.template_id);
+    const tplRes = await api('GET', '/api/templates/' + instance.template_id, { token });
+    tpl = tplRes.json;
+
+    renderDag(tpl, nodes, instance.status);
+    renderInstanceTasks(tasks);
+    renderInstanceLogs(logs);
+  } catch (e) {
+    dagView.innerHTML = '<div class="empty-hint">加载失败：' + escapeHtml(e.message) + '</div>';
+    instanceTaskList.innerHTML = '';
+    instanceLogBox.textContent = '';
+    instanceStatusBadge.innerHTML = '';
+  }
+}
+
+async function startDemoInstance() {
+  const token = currentToken();
+  if (!token) { alert('请先在左侧登录一个身份（建议用 alice）'); return; }
+  try {
+    const templates = await ensureTemplatesLoaded();
+    if (!templates.length) { alert('还没有任何模板，先在 API 控制台创建一个'); return; }
+    const res = await api('POST', '/api/instances', {
+      token,
+      body: {
+        template_id: templates[0].id,
+        business_type: templates[0].business_type || 'DEMO',
+        business_id: 'DEMO-' + Date.now(),
+        title: '可视化面板发起的测试实例',
+        form_data: { amount: Math.floor(Math.random() * 1000), source: 'workflow-tab' },
+      },
+    });
+    document.getElementById('instanceIdInput').value = res.json.id;
+    await loadInstance(res.json.id);
+  } catch (e) {
+    alert('发起失败：' + e.message);
+  }
+}
+
+/* ===================== 我的待办 ===================== */
+
+async function renderMyTasks() {
+  const token = currentToken();
+  if (!token) {
+    myTaskList.innerHTML = '<div class="empty-hint">请先在左侧登录一个身份</div>';
+    return;
+  }
+  const statusFilter = document.getElementById('taskStatusFilter').value;
+  myTaskList.innerHTML = '<div class="empty-hint">加载中 ...</div>';
+  try {
+    const path = '/api/tasks/mine' + (statusFilter ? ('?status=' + statusFilter) : '');
+    const res = await api('GET', path, { token });
+    const tasks = res.json || [];
+    if (!tasks.length) {
+      myTaskList.innerHTML = '<div class="empty-hint">没有符合条件的任务</div>';
+      return;
+    }
+    myTaskList.innerHTML = '';
+    tasks.forEach((t) => {
+      const item = document.createElement('div');
+      item.className = 'task-item';
+      const canAct = t.status === 'PENDING';
+      item.innerHTML =
+        '<div class="info"><div class="title">' + escapeHtml(t.instance_title || ('实例 #' + t.instance_id)) + ' · ' + escapeHtml(t.node_name || '') + '</div>' +
+        '<div class="meta">task #' + t.id + ' · instance #' + t.instance_id + '</div></div>' +
+        (canAct
+          ? ('<input class="mono task-comment" data-task="' + t.id + '" placeholder="备注（可选）" style="background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px;font-size:11px;width:140px;">' +
+             '<button class="btn sm" data-act="approve" data-task="' + t.id + '">通过</button>' +
+             '<button class="btn sm danger" data-act="reject" data-task="' + t.id + '">拒绝</button>')
+          : ('<span class="task-status ' + t.status + '">' + t.status + '</span>'));
+      myTaskList.appendChild(item);
+    });
+    myTaskList.querySelectorAll('button[data-act]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const taskId = btn.dataset.task;
+        const act = btn.dataset.act;
+        const commentInput = myTaskList.querySelector('.task-comment[data-task="' + taskId + '"]');
+        const comment = commentInput ? commentInput.value : '';
+        try {
+          await api('POST', '/api/tasks/' + taskId + '/' + act, { token, body: { comment } });
+          renderMyTasks();
+        } catch (e) {
+          alert('操作失败：' + e.message);
+        }
+      });
+    });
+  } catch (e) {
+    myTaskList.innerHTML = '<div class="empty-hint">加载失败：' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+/* ===================== 场景测试 ===================== */
+
+const SCENARIOS = [
+  {
+    id: 'happy-path',
+    title: '① 完整通过流程（fan-out / fan-in）',
+    sub: 'alice 发起 → bob 通过 → HR/财务并行出现待办 → 两个分支都通过后自动 APPROVED',
+    run: scenarioHappyPath,
+  },
+  {
+    id: 'reject',
+    title: '② 拒绝终止整条流程',
+    sub: 'bob 拒绝任务后，实例应立即变为 REJECTED，一票否决',
+    run: scenarioReject,
+  },
+  {
+    id: 'forbidden',
+    title: '③ 越权校验：非本人任务不能被审批',
+    sub: 'alice 尝试审批 bob 的任务，期望服务端返回 403 Forbidden',
+    run: scenarioForbidden,
+  },
+  {
+    id: 'template-validate',
+    title: '④ 模板合法性校验',
+    sub: '创建一个合法模板应成功；创建一个缺少 END 节点的模板应被拒绝（400）',
+    run: scenarioTemplateValidate,
+  },
+];
+
+function buildScenarioList() {
+  scenarioList.innerHTML = '';
+  SCENARIOS.forEach((scn) => {
+    const el = document.createElement('div');
+    el.className = 'scenario';
+    el.id = 'scn-' + scn.id;
+    el.innerHTML =
+      '<div class="scenario-head">' +
+        '<div><div class="scenario-title">' + scn.title + '</div><div class="scenario-sub">' + scn.sub + '</div></div>' +
+        '<span class="scenario-result">未运行</span>' +
+        '<button class="btn sm" data-run="' + scn.id + '">运行</button>' +
+      '</div>' +
+      '<div class="scenario-steps"></div>';
+    scenarioList.appendChild(el);
+
+    el.querySelector('.scenario-head').addEventListener('click', (ev) => {
+      if (ev.target.closest('button')) return;
+      el.querySelector('.scenario-steps').classList.toggle('open');
+    });
+    el.querySelector('button[data-run]').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      executeScenario(scn);
+    });
+  });
+}
+
+async function executeScenario(scn) {
+  const el = document.getElementById('scn-' + scn.id);
+  const resultBadge = el.querySelector('.scenario-result');
+  const stepsBox = el.querySelector('.scenario-steps');
+  stepsBox.innerHTML = '';
+  stepsBox.classList.add('open');
+  resultBadge.textContent = '运行中';
+  resultBadge.className = 'scenario-result running';
+
+  const ctx = {
+    step(text) {
+      const div = document.createElement('div');
+      div.className = 'step pending';
+      div.innerHTML = '<span class="mark">○</span><div><div class="txt">' + escapeHtml(text) + '</div><div class="sub"></div></div>';
+      stepsBox.appendChild(div);
+      return {
+        pass(sub) {
+          div.className = 'step pass';
+          div.querySelector('.mark').textContent = '✓';
+          if (sub) div.querySelector('.sub').textContent = sub;
+        },
+        fail(sub) {
+          div.className = 'step fail';
+          div.querySelector('.mark').textContent = '✗';
+          if (sub) div.querySelector('.sub').textContent = sub;
+        },
+      };
+    },
+  };
+
+  try {
+    await scn.run(ctx);
+    resultBadge.textContent = '通过';
+    resultBadge.className = 'scenario-result pass';
+  } catch (e) {
+    resultBadge.textContent = '失败';
+    resultBadge.className = 'scenario-result fail';
+  }
+  renderIdentity();
+  renderMyTasks();
+}
+
+function assert(cond, message) {
+  if (!cond) throw new Error(message);
+}
+
+async function scenarioHappyPath(ctx) {
+  let s = ctx.step('登录 alice / bob / carol / dave');
+  const alice = await loginRaw('alice', 'alice123');
+  const bob = await loginRaw('bob', 'bob123');
+  const carol = await loginRaw('carol', 'carol123');
+  const dave = await loginRaw('dave', 'dave123');
+  s.pass('4 个账号登录成功');
+
+  s = ctx.step('获取模板列表，取第一个模板');
+  const tplRes = await api('GET', '/api/templates', { token: alice.token });
+  const templates = tplRes.json;
+  assert(templates && templates.length > 0, '模板列表为空');
+  const templateId = templates[0].id;
+  s.pass('template_id = ' + templateId);
+
+  s = ctx.step('alice 发起一个新的审批实例');
+  const startRes = await api('POST', '/api/instances', {
+    token: alice.token,
+    body: { template_id: templateId, business_type: 'EXPENSE', business_id: 'SCN-' + Date.now(), title: '场景测试报销', form_data: { amount: 520 } },
+  });
+  const instance = startRes.json;
+  assert(instance.status === 'RUNNING', '期望初始状态 RUNNING，实际 ' + instance.status);
+  s.pass('instance #' + instance.id + ' 状态 = RUNNING');
+
+  s = ctx.step('bob（经理）应该收到 1 条待办并通过');
+  const bobTasksRes = await api('GET', '/api/tasks/mine?status=PENDING', { token: bob.token });
+  const bobTask = (bobTasksRes.json || []).find((t) => t.instance_id === instance.id);
+  assert(bobTask, 'bob 没有收到该实例的待办任务');
+  await api('POST', '/api/tasks/' + bobTask.id + '/approve', { token: bob.token, body: { comment: '经理同意' } });
+  s.pass('task #' + bobTask.id + ' 已通过');
+
+  s = ctx.step('验证 fan-out：HR 和财务应同时出现待办');
+  const carolTasksRes = await api('GET', '/api/tasks/mine?status=PENDING', { token: carol.token });
+  const daveTasksRes = await api('GET', '/api/tasks/mine?status=PENDING', { token: dave.token });
+  const carolTask = (carolTasksRes.json || []).find((t) => t.instance_id === instance.id);
+  const daveTask = (daveTasksRes.json || []).find((t) => t.instance_id === instance.id);
+  assert(carolTask, 'carol 没有收到并行分支的待办');
+  assert(daveTask, 'dave 没有收到并行分支的待办');
+  s.pass('carol task #' + carolTask.id + '，dave task #' + daveTask.id);
+
+  s = ctx.step('carol 通过，但流程应仍是 RUNNING（fan-in 未汇合）');
+  await api('POST', '/api/tasks/' + carolTask.id + '/approve', { token: carol.token, body: { comment: 'HR 无异议' } });
+  const midRes = await api('GET', '/api/instances/' + instance.id, { token: alice.token });
+  assert(midRes.json.instance.status === 'RUNNING', '期望仍是 RUNNING，实际 ' + midRes.json.instance.status);
+  s.pass('当前状态 = RUNNING（符合预期，财务分支还没走）');
+
+  s = ctx.step('dave 也通过 → 两个分支都完成，流程应自动 APPROVED');
+  await api('POST', '/api/tasks/' + daveTask.id + '/approve', { token: dave.token, body: { comment: '财务无异议' } });
+  const finalRes = await api('GET', '/api/instances/' + instance.id, { token: alice.token });
+  assert(finalRes.json.instance.status === 'APPROVED', '期望 APPROVED，实际 ' + finalRes.json.instance.status);
+  s.pass('最终状态 = APPROVED ✅ fan-in 汇合逻辑正确');
+}
+
+async function scenarioReject(ctx) {
+  let s = ctx.step('登录 alice / bob');
+  const alice = await loginRaw('alice', 'alice123');
+  const bob = await loginRaw('bob', 'bob123');
+  s.pass();
+
+  s = ctx.step('alice 发起一个新的审批实例');
+  const tplRes = await api('GET', '/api/templates', { token: alice.token });
+  const templateId = tplRes.json[0].id;
+  const startRes = await api('POST', '/api/instances', {
+    token: alice.token,
+    body: { template_id: templateId, business_type: 'EXPENSE', business_id: 'SCN-REJ-' + Date.now(), title: '会被拒绝的报销', form_data: { amount: 999999 } },
+  });
+  const instance = startRes.json;
+  s.pass('instance #' + instance.id);
+
+  s = ctx.step('bob 拒绝该任务');
+  const bobTasksRes = await api('GET', '/api/tasks/mine?status=PENDING', { token: bob.token });
+  const bobTask = (bobTasksRes.json || []).find((t) => t.instance_id === instance.id);
+  assert(bobTask, 'bob 没有收到待办任务');
+  await api('POST', '/api/tasks/' + bobTask.id + '/reject', { token: bob.token, body: { comment: '金额异常，驳回' } });
+  s.pass('task #' + bobTask.id + ' 已拒绝');
+
+  s = ctx.step('验证实例状态变为 REJECTED，且流程已终止');
+  const finalRes = await api('GET', '/api/instances/' + instance.id, { token: alice.token });
+  assert(finalRes.json.instance.status === 'REJECTED', '期望 REJECTED，实际 ' + finalRes.json.instance.status);
+  const rejectLog = finalRes.json.logs.find((l) => l.action === 'INSTANCE_REJECTED');
+  assert(rejectLog, '没有找到 INSTANCE_REJECTED 日志');
+  s.pass('最终状态 = REJECTED ✅ 一票否决逻辑正确');
+}
+
+async function scenarioForbidden(ctx) {
+  let s = ctx.step('登录 alice / bob');
+  const alice = await loginRaw('alice', 'alice123');
+  const bob = await loginRaw('bob', 'bob123');
+  s.pass();
+
+  s = ctx.step('alice 发起一个新的审批实例');
+  const tplRes = await api('GET', '/api/templates', { token: alice.token });
+  const templateId = tplRes.json[0].id;
+  const startRes = await api('POST', '/api/instances', {
+    token: alice.token,
+    body: { template_id: templateId, business_type: 'EXPENSE', business_id: 'SCN-FORBID-' + Date.now(), title: '越权测试报销', form_data: { amount: 100 } },
+  });
+  const instance = startRes.json;
+  s.pass('instance #' + instance.id);
+
+  s = ctx.step('取得 bob 的待办任务 ID');
+  const bobTasksRes = await api('GET', '/api/tasks/mine?status=PENDING', { token: bob.token });
+  const bobTask = (bobTasksRes.json || []).find((t) => t.instance_id === instance.id);
+  assert(bobTask, 'bob 没有收到待办任务');
+  s.pass('task #' + bobTask.id);
+
+  s = ctx.step('alice 尝试用自己的 token 审批 bob 的任务（应被拒绝）');
+  let gotForbidden = false;
+  let statusCode = null;
+  try {
+    await api('POST', '/api/tasks/' + bobTask.id + '/approve', { token: alice.token, body: { comment: '我不是审批人' } });
+  } catch (e) {
+    gotForbidden = true;
+    statusCode = e.result ? e.result.status : null;
+  }
+  assert(gotForbidden, '期望请求失败，但实际成功了——越权校验存在漏洞！');
+  assert(statusCode === 403, '期望 HTTP 403，实际 ' + statusCode);
+  s.pass('服务端正确返回 403 Forbidden ✅');
+}
+
+async function scenarioTemplateValidate(ctx) {
+  let s = ctx.step('登录 admin');
+  const admin = await loginRaw('admin', 'admin123');
+  s.pass();
+
+  s = ctx.step('创建一个合法模板（含 START/END，边引用存在的 code）');
+  const goodRes = await api('POST', '/api/templates', {
+    token: admin.token,
+    body: {
+      name: '场景测试合法模板-' + Date.now(),
+      business_type: 'DEMO',
+      nodes: [
+        { code: 'start', name: '开始', node_type: 'START' },
+        { code: 'review', name: '审核', node_type: 'APPROVAL', approve_type: 'ANY', approvers: [{ approver_type: 'ROLE', approver_ref: 'manager' }] },
+        { code: 'end', name: '结束', node_type: 'END' },
+      ],
+      edges: [{ from_code: 'start', to_code: 'review' }, { from_code: 'review', to_code: 'end' }],
+    },
+  });
+  assert(goodRes.status === 201, '期望 201，实际 ' + goodRes.status);
+  s.pass('创建成功，template #' + goodRes.json.id);
+
+  s = ctx.step('创建一个非法模板（缺少 END 节点，应被拒绝）');
+  let gotBadRequest = false;
+  let statusCode = null;
+  try {
+    await api('POST', '/api/templates', {
+      token: admin.token,
+      body: {
+        name: '场景测试非法模板-' + Date.now(),
+        business_type: 'DEMO',
+        nodes: [
+          { code: 'start', name: '开始', node_type: 'START' },
+          { code: 'review', name: '审核', node_type: 'APPROVAL', approve_type: 'ANY', approvers: [{ approver_type: 'ROLE', approver_ref: 'manager' }] },
+        ],
+        edges: [{ from_code: 'start', to_code: 'review' }],
+      },
+    });
+  } catch (e) {
+    gotBadRequest = true;
+    statusCode = e.result ? e.result.status : null;
+  }
+  assert(gotBadRequest, '期望请求被拒绝，但实际创建成功了——模板校验存在漏洞！');
+  assert(statusCode === 400, '期望 HTTP 400，实际 ' + statusCode);
+  s.pass('服务端正确返回 400，拒绝了没有 END 节点的模板 ✅');
+}
+
+/* ===================== 初始化 ===================== */
+
+function init() {
+  initTabs();
+  renderIdentity();
+  renderEndpointList();
+  buildScenarioList();
+
+  document.getElementById('pingBtn').addEventListener('click', ping);
+  document.getElementById('clearLogBtn').addEventListener('click', () => { logStream.innerHTML = ''; });
+  document.getElementById('manualLoginBtn').addEventListener('click', async () => {
+    const username = document.getElementById('manualUser').value.trim();
+    const password = document.getElementById('manualPass').value;
+    if (!username || !password) return;
+    try {
+      const json = await loginRaw(username, password);
+      state.currentUser = username;
+      renderIdentity();
+      renderMyTasks();
+    } catch (e) {
+      alert('登录失败：' + e.message);
+    }
+  });
+  document.getElementById('sendReqBtn').addEventListener('click', sendConsoleRequest);
+  document.getElementById('loadInstanceBtn').addEventListener('click', () => {
+    const id = document.getElementById('instanceIdInput').value.trim();
+    if (id) loadInstance(id);
+  });
+  document.getElementById('startDemoInstanceBtn').addEventListener('click', startDemoInstance);
+  document.getElementById('refreshTasksBtn').addEventListener('click', renderMyTasks);
+  document.getElementById('taskStatusFilter').addEventListener('change', renderMyTasks);
+
+  ping();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
